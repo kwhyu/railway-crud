@@ -36,15 +36,38 @@ app.get('/', (req, res) => {
 });
 
 // API Create
+// app.post('/items', async (req, res) => {
+//   const { name, description } = req.body;
+//   if (!name || !description) {
+//     return res.status(400).json({ error: "Name and description are required" });
+//   }
+//   const newItem = (await pool.query('INSERT INTO items (name, description) VALUES ($1, $2) RETURNING *', [name, description])).rows[0];
+//   await sendNotification('CREATE', newItem);
+//   res.json(newItem);
+// });
+
 app.post('/items', async (req, res) => {
   const { name, description } = req.body;
+
+  // Cek apakah name dan description ada
   if (!name || !description) {
     return res.status(400).json({ error: "Name and description are required" });
   }
-  const newItem = (await pool.query('INSERT INTO items (name, description) VALUES ($1, $2) RETURNING *', [name, description])).rows[0];
-  await sendNotification('CREATE', newItem);
-  res.json(newItem);
+
+  // Lanjutkan dengan proses penyimpanan di database
+  try {
+    const newItem = (await pool.query(
+      'INSERT INTO items (name, description) VALUES ($1, $2) RETURNING *',
+      [name, description]
+    )).rows[0];
+    sendNotification('CREATE', newItem);
+    res.json(newItem);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
 });
+
 
 // API Read
 app.get('/items', async (req, res) => {
