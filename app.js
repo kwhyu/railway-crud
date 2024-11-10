@@ -9,11 +9,15 @@ app.use(express.json());
 // Fungsi untuk mengirim email notifikasi menggunakan Brevo
 const sendNotification = async (action, item) => {
   try {
+    const recipients = process.env.RECIPIENT_EMAILS.split(",").map(email => ({
+      email: email.trim()
+    }));
+
     const response = await axios.post(
       'https://api.brevo.com/v3/smtp/email',
       {
         sender: { email: process.env.SENDER_EMAIL },
-        to: [{ email: process.env.RECIPIENT_EMAIL }],
+        to: recipients,
         subject: `CRUD Action: ${action}`,
         htmlContent: `<p>Aksi ${action} terjadi pada item: ${JSON.stringify(item)}</p>`,
       },
@@ -24,11 +28,34 @@ const sendNotification = async (action, item) => {
         },
       }
     );
+
     console.log('Notification email sent successfully');
   } catch (error) {
     console.error('Error sending email:', error);
   }
 };
+// const sendNotification = async (action, item) => {
+//   try {
+//     const response = await axios.post(
+//       'https://api.brevo.com/v3/smtp/email',
+//       {
+//         sender: { email: process.env.SENDER_EMAIL },
+//         to: [{ email: process.env.RECIPIENT_EMAIL }],
+//         subject: `CRUD Action: ${action}`,
+//         htmlContent: `<p>Aksi ${action} terjadi pada item: ${JSON.stringify(item)}</p>`,
+//       },
+//       {
+//         headers: {
+//           'api-key': process.env.BREVO_API_KEY,
+//           'Content-Type': 'application/json',
+//         },
+//       }
+//     );
+//     console.log('Notification email sent successfully');
+//   } catch (error) {
+//     console.error('Error sending email:', error);
+//   }
+// };
 
 // Root Route
 app.get('/', (req, res) => {
